@@ -1,32 +1,35 @@
-from __future__ import absolute_import, division
+"""
+MTS50 - controller subclass for the Thorlabs MTS50/M-Z8 stage
+"""
+
 from .controller import Controller
 
 class MTS50(Controller):
-  """
-  A controller for a MTS50/M-Z8 stage.
-  """
-  def __init__(self,*args, **kwargs):
-    super(MTS50, self).__init__(*args, **kwargs)
+    """
+    MTS50 - controller subclass for the Thorlabs MTS50/M-Z8 stage
+    """
 
-    # http://www.thorlabs.co.uk/thorProduct.cfm?partNumber=MTS50/M-Z8
-    # Note that these values are pulled from the APT User software,
-    # as they agree with the real limits of the stage better than
-    # what the website or the user manual states
-    self.max_velocity = 0.45
-    self.max_acceleration = 0.45
+    def __init__(self, serial_number=None, label=None, scale_correction=1.0):
+        """Constructor
 
-    # from private communication with thorlabs tech support:
-    # steps per revolution: 48
-    # gearbox ratio: 256
-    # pitch: 0.5 mm
-    # thus to advance 1 mm you need to turn 48*256*2 times
-    enccnt = 48*256*2
-    T = 2048/6e6
+        Args:
+            serial_number (str): S/N of the device
+            label (str): optional name of the device
+            scale_correction (float): correction factor for position scale
+        """
 
-    # these equations are taken from the APT protocol manual
-    self.position_scale = enccnt
-    self.velocity_scale = enccnt * T * 65536
-    self.acceleration_scale = enccnt * T * T * 65536
-
-    self.linear_range = (0,50)
+        super(MTS50, self).__init__(serial_number, label)
+     
+        self.max_velocity = 2.2
+        self.max_acceleration = 4.0
+     
+     
+        # From Thorlabs APT specification rev.14
+        enccnt = int(34304 * scale_correction)
+        T = 2048/6e6
+        self.position_scale = enccnt
+        self.velocity_scale = enccnt * T * 65536
+        self.acceleration_scale = enccnt * T * T * 65536
+     
+        self.linear_range = (0,50)
 
